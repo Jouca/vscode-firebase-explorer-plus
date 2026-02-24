@@ -59,7 +59,7 @@ export class FunctionsAPI {
           ...fn
         };
       });
-    } catch (err) {
+    } catch (err: any) {
       if (err.statusCode === 403) {
         // Cloud Functions is not enabled for this project
         return null;
@@ -83,7 +83,7 @@ export class FunctionsAPI {
           url: fn.httpsTrigger.url,
           resolveWithFullResponse: true
         });
-      } catch (err) {
+      } catch (err: any) {
         return err.response;
       }
     } else {

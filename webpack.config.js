@@ -7,7 +7,7 @@ const path = require('path');
 const semver = require('semver');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const CleanPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 // @ts-ignore
@@ -121,14 +121,14 @@ function getExtensionConfig(env) {
     new webpack.EnvironmentPlugin({
       // FIREBASE_TOKEN: process.env.FIREBASE_TOKEN
     }),
-    new CleanPlugin(clean, { verbose: false }),
-    new webpack.IgnorePlugin(/^spawn-sync$/),
+    new CleanWebpackPlugin({ verbose: false }),
+    new webpack.IgnorePlugin({ resourceRegExp: /^spawn-sync$/ }),
     new webpack.DefinePlugin({
       PRODUCTION: JSON.stringify(env.production),
       EXTENSION_VERSION: JSON.stringify(extVersion),
       EXTENSION_NAME: JSON.stringify('vscode.' + pkg.name)
     }),
-    new CopyPlugin(copyPluginConfig)
+    new CopyPlugin({ patterns: copyPluginConfig })
   ];
 
   const moduleRules = [
@@ -168,8 +168,9 @@ function getExtensionConfig(env) {
     node: {
       __dirname: false
     },
-    devtool: env.production ? undefined : 'cheap-module-eval-source-map',
+    devtool: env.production ? undefined : 'eval-cheap-module-source-map',
     output: {
+      path: path.resolve(__dirname, 'dist'),
       libraryTarget: 'commonjs2',
       filename: 'extension.js',
       devtoolModuleFilenameTemplate: 'file:///[absolute-resource-path]'
@@ -177,9 +178,7 @@ function getExtensionConfig(env) {
     optimization: {
       minimizer: [
         new TerserPlugin({
-          cache: true,
           parallel: true,
-          sourceMap: true,
           terserOptions: {
             ecma: 8,
             module: true
@@ -190,7 +189,9 @@ function getExtensionConfig(env) {
     externals: {
       vscode: 'commonjs vscode',
       bufferutil: 'undefined',
-      'utf-8-validate': 'undefined'
+      'utf-8-validate': 'undefined',
+      'request': 'commonjs request',
+      'request-promise-native': 'commonjs request-promise-native'
     },
     module: {
       rules: moduleRules

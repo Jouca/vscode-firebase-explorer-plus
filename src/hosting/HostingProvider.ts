@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { AccountInfo } from '../accounts';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, dateToString, contains, getFilePath } from '../utils';
+import { messageTreeItem, dateToString, contains, getFileUri } from '../utils';
 import {
   HostingAPI,
   HostingRelease,
@@ -129,8 +129,8 @@ export class HostingProvider
 export class HostingSiteItem extends vscode.TreeItem {
   contextValue = 'hosting.site';
   iconPath = {
-    dark: getFilePath('assets', 'hosting', 'dark', 'site.svg'),
-    light: getFilePath('assets', 'hosting', 'light', 'site.svg')
+    dark: getFileUri('assets', 'hosting', 'dark', 'site.svg'),
+    light: getFileUri('assets', 'hosting', 'light', 'site.svg')
   };
 
   constructor(
@@ -140,7 +140,7 @@ export class HostingSiteItem extends vscode.TreeItem {
   ) {
     super(site.site, vscode.TreeItemCollapsibleState.Collapsed);
 
-    this.tooltip = this.label!
+    this.tooltip = typeof this.label === 'string' ? this.label : this.label!.label;
   }
 }
 
@@ -166,8 +166,8 @@ export class HostingReleaseItem extends vscode.TreeItem {
 
     if (release.type === HostingReleaseType.ROLLBACK) {
       this.iconPath = {
-        dark: getFilePath('assets', 'hosting', 'dark', 'rolledback.svg'),
-        light: getFilePath('assets', 'hosting', 'light', 'rolledback.svg')
+        dark: getFileUri('assets', 'hosting', 'dark', 'rolledback.svg'),
+        light: getFileUri('assets', 'hosting', 'light', 'rolledback.svg')
       };
     } else if (
       release.type === HostingReleaseType.SITE_DISABLE ||
@@ -175,8 +175,8 @@ export class HostingReleaseItem extends vscode.TreeItem {
     ) {
       // this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.iconPath = {
-        dark: getFilePath('assets', 'dark', 'cancel.svg'),
-        light: getFilePath('assets', 'light', 'cancel.svg')
+        dark: getFileUri('assets', 'dark', 'cancel.svg'),
+        light: getFileUri('assets', 'light', 'cancel.svg')
       };
     } else if (
       release.version.status === HostingVersionStatus.DELETED ||
@@ -185,15 +185,15 @@ export class HostingReleaseItem extends vscode.TreeItem {
       // this.label = `<i>${this.label}</i>`;
       this.collapsibleState = vscode.TreeItemCollapsibleState.None;
       this.iconPath = {
-        dark: getFilePath('assets', 'hosting', 'dark', 'deleted.svg'),
-        light: getFilePath('assets', 'hosting', 'light', 'deleted.svg')
+        dark: getFileUri('assets', 'hosting', 'dark', 'deleted.svg'),
+        light: getFileUri('assets', 'hosting', 'light', 'deleted.svg')
       };
     } else if (release.version.name === activeVersion) {
-      this.iconPath = getFilePath('assets', 'hosting', 'release-active.svg');
+      this.iconPath = getFileUri('assets', 'hosting', 'release-active.svg');
     } else {
       this.iconPath = {
-        dark: getFilePath('assets', 'hosting', 'dark', 'deployed.svg'),
-        light: getFilePath('assets', 'hosting', 'light', 'deployed.svg')
+        dark: getFileUri('assets', 'hosting', 'dark', 'deployed.svg'),
+        light: getFileUri('assets', 'hosting', 'light', 'deployed.svg')
       };
     }
   }
@@ -256,8 +256,8 @@ export class HostingReleaseInfoItem extends vscode.TreeItem {
 
     if (icon !== undefined) {
       this.iconPath = {
-        dark: getFilePath('assets', 'dark', `${icon}.svg`),
-        light: getFilePath('assets', 'light', `${icon}.svg`)
+        dark: getFileUri('assets', 'dark', `${icon}.svg`),
+        light: getFileUri('assets', 'light', `${icon}.svg`)
       };
     }
   }

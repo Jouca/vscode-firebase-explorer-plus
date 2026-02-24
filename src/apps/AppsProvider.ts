@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ProjectManager, FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, getFilePath } from '../utils';
+import { messageTreeItem, getFileUri } from '../utils';
 import { IosApp, AndroidApp, ShaCertificate } from './apps';
 import { AccountInfo } from '../accounts';
 
@@ -77,7 +77,7 @@ export class AppsProvider implements vscode.TreeDataProvider<AppsProviderItem> {
 
 export class IosAppItem extends vscode.TreeItem {
   contextValue = 'apps.iosApp';
-  iconPath = getFilePath('assets', 'apps', 'ios.svg');
+  iconPath = getFileUri('assets', 'apps', 'ios.svg');
 
   constructor(
     public app: IosApp,
@@ -92,7 +92,7 @@ export class IosAppItem extends vscode.TreeItem {
 
 export class AndroidAppItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp';
-  iconPath = getFilePath('assets', 'apps', 'android-head.svg');
+  iconPath = getFileUri('assets', 'apps', 'android-head.svg');
 
   constructor(
     public app: AndroidApp,
@@ -108,8 +108,8 @@ export class AndroidAppItem extends vscode.TreeItem {
 export class FingerprintFolderItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp.fingerprintsFolder';
   iconPath = {
-    light: getFilePath('assets', 'apps', 'light', 'fingerprint.svg'),
-    dark: getFilePath('assets', 'apps', 'dark', 'fingerprint.svg')
+    light: getFileUri('assets', 'apps', 'light', 'fingerprint.svg'),
+    dark: getFileUri('assets', 'apps', 'dark', 'fingerprint.svg')
   };
 
   constructor(public app: AndroidApp, public appItem: AndroidAppItem) {
@@ -122,8 +122,8 @@ export class FingerprintFolderItem extends vscode.TreeItem {
 export class FingerprintItem extends vscode.TreeItem {
   contextValue = 'apps.androidApp.fingerprint';
   iconPath = {
-    light: getFilePath('assets', 'apps', 'light', 'certificate.svg'),
-    dark: getFilePath('assets', 'apps', 'dark', 'certificate.svg')
+    light: getFileUri('assets', 'apps', 'light', 'certificate.svg'),
+    dark: getFileUri('assets', 'apps', 'dark', 'certificate.svg')
   };
 
   constructor(

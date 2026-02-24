@@ -17,7 +17,7 @@ import {
   getFullPath,
   decimalToDMS,
   caseInsensitiveCompare,
-  getFilePath
+  getFileUri
 } from '../utils';
 import { AccountInfo as accountInfo } from '../accounts';
 
@@ -79,7 +79,7 @@ export class FirestoreProvider
         return collections.collectionIds.map(
           id => new CollectionItem(id, '', account, project)
         );
-      } catch (err) {
+      } catch (err: any) {
         return [
           messageTreeItem(
             'Not enabled for this project',
@@ -219,7 +219,7 @@ export class FirestoreProvider
 
 export class CollectionItem extends vscode.TreeItem {
   contextValue = 'firestore.collection';
-  iconPath = getFilePath('assets', 'firestore', 'collection.svg');
+  iconPath = getFileUri('assets', 'firestore', 'collection.svg');
 
   constructor(
     public name: string,
@@ -293,11 +293,11 @@ export class DocumentItem extends vscode.TreeItem {
   }
 
   // @ts-ignore
-  get iconPath(): string {
+  get iconPath(): vscode.Uri {
     if (this.document.createTime || this.isRemoved) {
-      return getFilePath('assets', 'firestore/document.svg');
+      return getFileUri('assets', 'firestore/document.svg');
     } else {
-      return getFilePath('assets', 'firestore/document-empty.svg');
+      return getFileUri('assets', 'firestore/document-empty.svg');
     }
   }
 }
@@ -306,7 +306,7 @@ export class DocumentFieldItem<
   T extends FieldValue = any
 > extends vscode.TreeItem {
   contextValue = 'firestore.documentField';
-  iconPath: string;
+  iconPath: vscode.Uri;
   type: DocumentValueType;
   value: T;
   escapedValue?: string;
@@ -327,7 +327,7 @@ export class DocumentFieldItem<
       processed.type === 'integer' || processed.type === 'double'
         ? 'number'
         : processed.type;
-    this.iconPath = getFilePath('assets', 'valuetype', `${typeIcon}.svg`);
+    this.iconPath = getFileUri('assets', 'valuetype', `${typeIcon}.svg`);
 
     if (processed.type === 'map' || processed.type === 'array') {
       this.collapsibleState = expand

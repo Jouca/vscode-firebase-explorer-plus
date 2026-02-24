@@ -54,7 +54,11 @@ export async function getCliAccount(): Promise<AccountInfo | null> {
 
   if (cachedConfig) {
     const { user, tokens } = cachedConfig;
-    return { user, tokens, origin: 'cli' };
+    
+    // Validate that we have complete account info
+    if (user && user.email && tokens && tokens.refresh_token) {
+      return { user, tokens, origin: 'cli' };
+    }
   }
 
   return null;

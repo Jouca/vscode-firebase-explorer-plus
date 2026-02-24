@@ -112,10 +112,10 @@ async function editEntryValue(element: DatabaseElementItem): Promise<void> {
             'database'
           );
           databaseProvider.refresh(element);
-        } catch (err) {
+        } catch (err: any) {
           vscode.window.showErrorMessage(
             'Failed to update the value on the database',
-            err
+            String(err)
           );
           console.error(err);
         }
@@ -156,10 +156,10 @@ async function deleteEntry(element: DatabaseElementItem): Promise<void> {
           );
           element.markAsRemoved();
           databaseProvider.refresh(element);
-        } catch (err) {
+        } catch (err: any) {
           vscode.window.showErrorMessage(
             'Failed to update the value on the database',
-            err
+            String(err)
           );
           console.error(err);
         }

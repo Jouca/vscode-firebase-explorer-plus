@@ -5,7 +5,7 @@ import {
   caseInsensitiveCompare,
   messageTreeItem,
   getFullPath,
-  getFilePath
+  getFileUri
 } from '../utils';
 import { AccountInfo } from '../accounts';
 
@@ -93,7 +93,7 @@ export class DatabaseProvider
 
     try {
       value = await api.getShallow(path, instance);
-    } catch (err) {
+    } catch (err: any) {
       if (err.statusCode && err.statusCode === 423) {
         // Database is disabled
         return [
@@ -160,7 +160,7 @@ export class DatabaseProvider
 
 export class DatabaseElementItem extends vscode.TreeItem {
   contextValue = 'database.entry';
-  iconPath = getFilePath('assets', 'database', 'unknown-entry.svg');
+  iconPath = getFileUri('assets', 'database', 'unknown-entry.svg');
   isRemoved = false;
 
   private _value: DatabaseShallowValue | undefined;
@@ -205,7 +205,7 @@ export class DatabaseElementItem extends vscode.TreeItem {
   set hasChildren(hasChildren: boolean) {
     if (hasChildren) {
       this.contextValue = 'database.parentEntry';
-      this.iconPath = getFilePath('assets', 'valuetype', 'map.svg');
+      this.iconPath = getFileUri('assets', 'valuetype', 'map.svg');
     }
   }
 
@@ -242,7 +242,7 @@ export class DatabaseElementItem extends vscode.TreeItem {
         type = 'map';
       }
 
-      this.iconPath = getFilePath('assets', 'valuetype', `${type}.svg`);
+      this.iconPath = getFileUri('assets', 'valuetype', `${type}.svg`);
     }
   }
 }
@@ -250,8 +250,8 @@ export class DatabaseElementItem extends vscode.TreeItem {
 export class DatabaseInstanceItem extends vscode.TreeItem {
   contextValue = 'database.instance';
   iconPath = {
-    dark: getFilePath('assets', 'database', 'dark', 'database.svg'),
-    light: getFilePath('assets', 'database', 'light', 'database.svg')
+    dark: getFileUri('assets', 'database', 'dark', 'database.svg'),
+    light: getFileUri('assets', 'database', 'light', 'database.svg')
   };
 
   constructor(

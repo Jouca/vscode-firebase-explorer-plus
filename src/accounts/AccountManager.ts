@@ -59,25 +59,16 @@ export class AccountManager {
   }
 
   static async getAccounts(): Promise<AccountData[]> {
-    const accounts = Object.values(getStateAccounts()); 
-
     const cliAccount = await getCliAccount();
     if (cliAccount) {
       await AccountManager.addAccount(cliAccount);
     }
-    // if (!cliAccount) {
-    //   const idx = accounts.findIndex(itm => itm.info.origin === 'cli')
-    //   if (idx !== -1) {
-    //     accounts.splice(idx, 1)
-    //   }
-    //   setStateAccounts(accounts.reduce((acc, itm) => {
-    //     acc[itm.info.user.email] = itm
-    //     return acc
-    //   }, {} as StateAccounts))
-    // } else {
-    //   await AccountManager.addAccount(cliAccount);
-    // }
-    return accounts;
+    
+    // Return accounts after potentially adding CLI account
+    const accounts = Object.values(getStateAccounts());
+    
+    // Filter out any invalid accounts
+    return accounts.filter(acc => acc?.info?.user?.email);
   }
 
   static getSelectedAccountInfo(): AccountInfo | null {
@@ -91,11 +82,19 @@ export class AccountManager {
   static addAccount(accountInfo: AccountInfo): Thenable<void> {
     const accounts = getStateAccounts();
 
-    accounts[accountInfo?.user?.email] = {
+    const email = accountInfo?.user?.email;
+    if (!email) {
+      console.error('Cannot add account: missing email', accountInfo);
+      return Promise.resolve();
+    }
+
+    console.log('Adding account to state:', email);
+    accounts[email] = {
       info: accountInfo,
       projects: []
     };
 
+    console.log('Accounts after adding:', Object.keys(accounts));
     return setStateAccounts(accounts);
   }
 
@@ -159,7 +158,7 @@ export class AccountManager {
 
     try {
       return request(reqOptions);
-    } catch (err) {
+    } catch (err: any) {
       if (Array.isArray(retryOn) && retryOn.includes(err.statusCode)) {
         return new Promise(resolve => {
           setTimeout(resolve, RETRY_DELAY);

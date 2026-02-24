@@ -49,13 +49,30 @@ export class AccountsAPI {
 
     try {
       resp = await request(reqOptions);
-    } catch (err) {
-      const error = JSON.parse(err.error);
-      let message = 'Error fetching access token: ' + error.error;
-      if (error.error_description) {
-        message += ' (' + error.error_description + ')';
+    } catch (err: any) {
+      console.error('Error fetching access token:', err);
+      
+      let errorMessage = 'Error fetching access token';
+      
+      try {
+        if (err.error) {
+          // Try to parse the error response
+          const errorBody = typeof err.error === 'string' ? JSON.parse(err.error) : err.error;
+          if (errorBody.error) {
+            errorMessage += ': ' + errorBody.error;
+            if (errorBody.error_description) {
+              errorMessage += ' (' + errorBody.error_description + ')';
+            }
+          }
+        } else if (err.message) {
+          errorMessage += ': ' + err.message;
+        }
+      } catch (parseError) {
+        // If parsing fails, use a generic message
+        errorMessage += ': ' + (err.message || 'Unknown error');
       }
-      throw new Error(message);
+      
+      throw new Error(errorMessage);
     }
 
     const token: GoogleOAuthAccessToken = JSON.parse(resp.body);

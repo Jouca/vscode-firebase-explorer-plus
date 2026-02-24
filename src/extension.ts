@@ -88,12 +88,15 @@ function registerProvider<T>(
 const getExtensionConfig = async (context: vscode.ExtensionContext) => {
   let extensionConfig = context.globalState.get<ExtensionConfig>('config');
   
-  // It's the first time we load the extension. Hello world!
-  extensionConfig = { version: EXTENSION_VERSION };
-  context.globalState.update('config', extensionConfig);
-  context.globalState.update('accounts', undefined);
+  if (!extensionConfig) {
+    // It's the first time we load the extension. Hello world!
+    extensionConfig = { version: EXTENSION_VERSION };
+    context.globalState.update('config', extensionConfig);
+    // Only clear accounts on first install, not on every activation
+    // context.globalState.update('accounts', undefined);
+  }
 
-  return extensionConfig
+  return extensionConfig;
 }
 
 async function initialize(context: vscode.ExtensionContext): Promise<void> {

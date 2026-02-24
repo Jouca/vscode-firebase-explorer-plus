@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { FirebaseProject } from './ProjectManager';
 import { AccountManager, AccountInfo } from '../accounts';
-import { messageTreeItem, getFilePath } from '../utils';
+import { messageTreeItem, getFileUri } from '../utils';
 
 export class ProjectsProvider
   implements vscode.TreeDataProvider<AccountsProviderItem> {
@@ -23,9 +23,13 @@ export class ProjectsProvider
   async getChildren(
     element?: AccountsProviderItem
   ): Promise<AccountsProviderItem[]> {
+    console.log('ProjectsProvider.getChildren called, element:', element);
     if (!element) {
       // List the available accounts
+      console.log('Loading accounts...');
       const accounts = await AccountManager.getAccounts();
+      console.log('Accounts loaded:', accounts.length, 'accounts');
+      accounts.forEach(acc => console.log('  - Account:', acc?.info?.user?.email));
       // accounts[0].info.origin = ''
       return accounts.filter(itm => itm?.info?.user).map(account => new AccountItem(account.info));
     } else if (element instanceof AccountItem) {
@@ -83,19 +87,20 @@ export class ProjectsProvider
 
 export class AccountItem extends vscode.TreeItem {
   contextValue = 'account';
-  iconPath = getFilePath('assets', 'account-google.svg');
+  iconPath = getFileUri('assets', 'account-google.svg');
 
   constructor(
     public accountInfo: AccountInfo,
     public readonly command?: vscode.Command
   ) {
-    super(accountInfo.user.email, vscode.TreeItemCollapsibleState.Expanded);
+    const email = accountInfo?.user?.email || 'Unknown Account';
+    super(email, vscode.TreeItemCollapsibleState.Expanded);
   }
 }
 
 export class ProjectItem extends vscode.TreeItem {
   contextValue = 'project';
-  iconPath = getFilePath('assets', 'firebase-color-small.svg');
+  iconPath = getFileUri('assets', 'firebase-color-small.svg');
 
   readonly command: vscode.Command = {
     command: 'firebaseExplorer.projects.selection',

@@ -29,8 +29,8 @@ export function messageTreeItem(
 
   if (icon) {
     item.iconPath = {
-      light: getFilePath('assets', 'light', `${icon}.svg`),
-      dark: getFilePath('assets', 'dark', `${icon}.svg`)
+      light: getFileUri('assets', 'light', `${icon}.svg`),
+      dark: getFileUri('assets', 'dark', `${icon}.svg`)
     };
   } else {
     item.iconPath = undefined;
@@ -140,6 +140,10 @@ export function httpsGet(
 
 export function getFilePath(...filenameParts: string[]): string {
   return getContext().asAbsolutePath(path.join(...filenameParts));
+}
+
+export function getFileUri(...filenameParts: string[]): vscode.Uri {
+  return vscode.Uri.file(getFilePath(...filenameParts));
 }
 
 interface DirectoryResult {
@@ -295,7 +299,7 @@ function unzipToTmpDir_handleStreams(
     writeStream.close();
   });
 
-  writeStream.on('error', err => {
+  writeStream.on('error', (err: any) => {
     if (err.code === 'ENOENT') {
       // Creating the writeStream failed because the path to the
       // file doesn't exists. Let's create it and try again.

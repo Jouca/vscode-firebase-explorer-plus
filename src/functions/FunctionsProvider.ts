@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as directoryTree from 'directory-tree';
 import { FirebaseProject } from '../projects/ProjectManager';
-import { messageTreeItem, caseInsensitiveCompare, getFilePath } from '../utils';
+import { messageTreeItem, caseInsensitiveCompare, getFileUri } from '../utils';
 import { AccountInfo } from '../accounts';
 import { FunctionsAPI, CloudFunction, CloudFunctionTriggerType } from './api';
 
@@ -175,7 +175,7 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
     //   light: getFilePath('assets', 'functions', 'light', `${type}-trigger.svg`),
     //   dark: getFilePath('assets', 'functions', 'dark', `${type}-trigger.svg`)
     // };
-    this.iconPath = getFilePath('assets', 'functions', `${type}-trigger.svg`);
+    this.iconPath = getFileUri('assets', 'functions', `${type}-trigger.svg`);
 
     switch (type) {
       case CloudFunctionTriggerType.Event:
@@ -196,15 +196,15 @@ export class FunctionTriggerTypeItem extends vscode.TreeItem {
 
   // @ts-ignore we must override this property
   get tooltip(): string {
-    return this.label!;
+    return typeof this.label === 'string' ? this.label : (this.label?.label || '');
   }
 }
 
 export class CloudFunctionItem extends vscode.TreeItem {
   sourceCodeDir?: string;
   iconPath = {
-    dark: getFilePath('assets', 'functions', 'dark', 'cloud-functions.svg'),
-    light: getFilePath('assets', 'functions', 'light', 'cloud-functions.svg')
+    dark: getFileUri('assets', 'functions', 'dark', 'cloud-functions.svg'),
+    light: getFileUri('assets', 'functions', 'light', 'cloud-functions.svg')
   };
 
   constructor(

@@ -29,10 +29,13 @@ const SCOPES = [
 const servers: { [k: string]: http.Server } = {};
 
 export async function initiateLogin(nonce: string): Promise<AccountInfo> {
+  console.log('Initiating login with nonce:', nonce);
   const port = await portfinder.getPortPromise({ port: 9005 });
+  console.log('Found available port:', port);
 
   return new Promise<AccountInfo>((resolve, reject) => {
     const callbackUrl = 'http://localhost:' + port;
+    console.log('Callback URL:', callbackUrl);
 
     servers[nonce] = http.createServer(async (req, res) => {
       const { query } = parseUrl(req.url!, true);
@@ -76,6 +79,7 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
     });
 
     servers[nonce].listen(port, () => {
+      console.log('HTTP server listening on port:', port);
       const loginParams: { [k: string]: string } = {
         client_id: /*API_CONFIG*/ CLI_API_CONFIG.clientId,
         scope: SCOPES.join(' '),
@@ -91,6 +95,7 @@ export async function initiateLogin(nonce: string): Promise<AccountInfo> {
 
       const loginUrl =
         API_CONFIG.authOrigin + '/o/oauth2/auth?' + loginQueryParams.join('&');
+      console.log('Opening login URL in browser:', loginUrl);
       vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(loginUrl));
     });
 
@@ -138,15 +143,18 @@ async function getTokensFromAuthCode(
         !contains(response.body, 'refresh_token'))
     ) {
       console.log('Token Fetch Error:', response.statusCode, response.body);
-      throw new Error('Invalid credential');
+      throw new Error('Invalid credential: Missing access_token or refresh_token');
     }
 
     const tokens: AccountTokens = response.body;
     tokens.expires_at = Date.now() + 1000 * tokens.expires_in;
     return response.body;
-  } catch (err) {
-    console.log('Token Fetch Error:', err);
-    throw new Error('Invalid credential');
+  } catch (err: any) {
+    console.error('Token Fetch Error:', err);
+    if (err.statusCode) {
+      throw new Error(`Invalid credential (HTTP ${err.statusCode})`);
+    }
+    throw new Error('Invalid credential: ' + (err.message || 'Unknown error'));
   }
 }
 

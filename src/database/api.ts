@@ -57,7 +57,7 @@ export class DatabaseAPI {
         }
       );
       return response.body;
-    } catch (err) {
+    } catch (err: any) {
       if (err.statusCode && err.statusCode === 423) {
         // Database disabled
         throw err;

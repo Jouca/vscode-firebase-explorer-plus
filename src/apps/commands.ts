@@ -109,10 +109,10 @@ async function editAppName(element: AppsProviderItem): Promise<void> {
             const appsProvider = providerStore.get<AppsProvider>('apps');
             appsProvider.refresh(element);
           }
-        } catch (err) {
+        } catch (err: any) {
           vscode.window.showErrorMessage(
             "Failed to update app's display name",
-            err
+            String(err)
           );
           console.error(err);
         }
@@ -194,10 +194,10 @@ async function addAppCertificate(
 
             const appsProvider = providerStore.get<AppsProvider>('apps');
             appsProvider.refresh(element.appItem);
-          } catch (err) {
+          } catch (err: any) {
             vscode.window.showErrorMessage(
               'Failed to add new certificate fingerprint',
-              err
+              String(err)
             );
             console.error(err);
           }
@@ -212,7 +212,9 @@ function copyAppCertificate(element: FingerprintItem): void {
     return;
   }
 
-  vscode.env.clipboard.writeText(element.label!);
+  vscode.env.clipboard.writeText(
+    typeof element.label === 'string' ? element.label : element.label!.label
+  );
 }
 
 async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
@@ -240,10 +242,10 @@ async function deleteAppCertificate(element: FingerprintItem): Promise<void> {
           await element.app.deleteShaCertificate(element.cert);
           const appsProvider = providerStore.get<AppsProvider>('apps');
           appsProvider.refresh(element.folderItem);
-        } catch (err) {
+        } catch (err: any) {
           vscode.window.showErrorMessage(
             'Failed to delete certificate fingerprint',
-            err
+            String(err)
           );
           console.error(err);
         }

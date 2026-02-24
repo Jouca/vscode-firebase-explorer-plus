@@ -192,7 +192,7 @@ export class AppsAPI {
       } else {
         throw response;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('addShaCertificate', err);
 
       let errorMsg = `Failed to add a certificate for app ${appId}`;

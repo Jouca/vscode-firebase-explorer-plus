@@ -85,13 +85,19 @@ function projectSelection(
 }
 
 async function refreshProjects(element?: AccountItem): Promise<void> {
+  console.log('refreshProjects called, element:', element);
   if (!element) {
-    const accounts = await AccountManager.getAccounts()
+    const accounts = await AccountManager.getAccounts();
+    console.log('Accounts for refresh:', accounts.length);
     if (accounts?.length > 0) {
-      element = new AccountItem(accounts.shift()?.info!)
+      const firstAccount = accounts[0];
+      if (firstAccount?.info?.user?.email) {
+        element = new AccountItem(firstAccount.info);
+      }
     }
   }
 
   const projectsProvider = providerStore.get<ProjectsProvider>('projects');
+  console.log('Calling projectsProvider.refresh()');
   projectsProvider.refresh(element);
 }
