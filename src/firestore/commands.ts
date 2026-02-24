@@ -7,7 +7,7 @@ import {
   DocumentItem,
   CollectionItem
 } from './FirestoreProvider';
-import { getFieldValue, FirestoreAPI } from './api';
+import { getFieldValue, FirestoreAPI, DocumentFieldValue } from './api';
 import { getFullPath, getContext } from '../utils';
 import { getFirestoreFileSystemProvider, convertToFirestoreFields } from './FirestoreFileSystem';
 import { AccountInfo as accountInfo } from '../accounts';
@@ -93,6 +93,20 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.exportDatabase',
+      exportDatabase
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.importDatabase',
+      importDatabase
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       'firebaseExplorer.firestore.refreshDocument',
       providerRefresh
     )
@@ -130,6 +144,13 @@ export function registerFirestoreCommands(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'firebaseExplorer.firestore.copyDocumentFieldValue',
       copyDocumentFieldValue
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.firestore.clearDatabase',
+      clearDatabase
     )
   );
 }
@@ -700,6 +721,556 @@ async function deleteCollection(element: CollectionItem): Promise<void> {
       }
     );
   }
+}
+
+async function clearDatabase(): Promise<void> {
+  const context = getContext();
+  const account = context.globalState.get<accountInfo>('selectedAccount');
+  const project = context.globalState.get<FirebaseProject | null>('selectedProject');
+
+  if (!account || !project) {
+    vscode.window.showErrorMessage('Please select a Firebase account and project first.');
+    return;
+  }
+
+  // First confirmation
+  const firstConfirmation = await vscode.window.showWarningMessage(
+    `⚠️ DANGER: Clear entire Firestore database?\n\n` +
+    `This will DELETE ALL COLLECTIONS and ALL DOCUMENTS in project "${project.projectId}".\n\n` +
+    `It will also COST MONEY if your database has a large number of documents, as Firestore charges for document deletions.\n\n` +
+    `This action is IRREVERSIBLE and CANNOT BE UNDONE!`,
+    { modal: true },
+    'Continue'
+  );
+
+  if (firstConfirmation !== 'Continue') {
+    return;
+  }
+
+  // Second confirmation - require typing project ID
+  const projectId = project.projectId;
+  const typedConfirmation = await vscode.window.showInputBox({
+    prompt: `Type the project ID "${projectId}" to confirm deletion`,
+    placeHolder: projectId,
+    validateInput: (value) => {
+      if (value !== projectId) {
+        return `Must type exactly: ${projectId}`;
+      }
+      return undefined;
+    }
+  });
+
+  if (typedConfirmation !== projectId) {
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      title: 'Clearing Firestore database...',
+      location: vscode.ProgressLocation.Notification,
+      cancellable: false
+    },
+    async (progress) => {
+      try {
+        const api = FirestoreAPI.for(account, project);
+        let totalDeleted = 0;
+
+        progress.report({ message: 'Listing root collections...' });
+        const rootCollections = await api.listCollections('');
+
+        if (!rootCollections.collectionIds || rootCollections.collectionIds.length === 0) {
+          vscode.window.showInformationMessage('Database is already empty.');
+          return;
+        }
+
+        // Delete each root collection
+        for (const collectionId of rootCollections.collectionIds) {
+          progress.report({ message: `Deleting collection: ${collectionId}...` });
+          
+          let hasMore = true;
+          let pageToken: string | undefined;
+
+          while (hasMore) {
+            const result = await api.listDocuments(collectionId, 1000, pageToken);
+            
+            if (result.documents && result.documents.length > 0) {
+              const BATCH_SIZE = 500;
+              
+              // Process documents in batches of 500 using batchWrite
+              for (let i = 0; i < result.documents.length; i += BATCH_SIZE) {
+                const batch = result.documents.slice(i, i + BATCH_SIZE);
+                const writes = batch.map((doc: any) => ({
+                  delete: doc.name
+                }));
+
+                try {
+                  await retryWithBackoff(() => (api as any).batchWrite(writes));
+                  totalDeleted += writes.length;
+                  progress.report({ message: `Deleted ${totalDeleted} documents...` });
+                } catch (error) {
+                  console.error(`Batch delete failed:`, error);
+                  // Fallback to individual deletes
+                  for (const doc of batch) {
+                    try {
+                      const docPath = doc.name.split('/documents/')[1];
+                      await retryWithBackoff(() => api.deleteDocument(docPath));
+                      totalDeleted++;
+                    } catch (err) {
+                      console.error(`Failed to delete document:`, err);
+                    }
+                  }
+                }
+              }
+            }
+
+            pageToken = result.nextPageToken;
+            hasMore = !!pageToken;
+          }
+        }
+
+        // Refresh the Firestore view
+        const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
+        firestoreProvider.refresh();
+
+        vscode.window.showInformationMessage(
+          `Database cleared successfully! ${totalDeleted} document(s) deleted.`
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(`Failed to clear database: ${error}`);
+      }
+    }
+  );
+}
+
+// Helper function to limit concurrency
+async function limitConcurrency<T>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<any>
+): Promise<any[]> {
+  const results: any[] = [];
+  
+  for (let i = 0; i < items.length; i += limit) {
+    const batch = items.slice(i, i + limit);
+    const batchResults = await Promise.all(batch.map(fn));
+    results.push(...batchResults);
+  }
+  
+  return results;
+}
+
+// Helper function to retry with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  baseDelay = 1000
+): Promise<T> {
+  let lastError: any;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Check if it's a network error that might be transient
+      const isRetriable = 
+        error.message?.includes('socket') ||
+        error.message?.includes('ECONNRESET') ||
+        error.message?.includes('ETIMEDOUT') ||
+        error.message?.includes('TLS');
+      
+      if (attempt < maxRetries && isRetriable) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        break;
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+async function exportDatabase(): Promise<void> {
+  const context = getContext();
+  const account = context.globalState.get<accountInfo>('selectedAccount');
+  const project = context.globalState.get<FirebaseProject | null>('selectedProject');
+
+  if (!account || !project) {
+    vscode.window.showErrorMessage('Please select a Firebase account and project first.');
+    return;
+  }
+
+  // Ask user where to save the file
+  const saveUri = await vscode.window.showSaveDialog({
+    defaultUri: vscode.Uri.file(`firestore-${project.projectId}-${Date.now()}.json`),
+    filters: {
+      'JSON Files': ['json'],
+      'All Files': ['*']
+    },
+    saveLabel: 'Export Database'
+  });
+
+  if (!saveUri) {
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      title: 'Exporting Firestore database...',
+      location: vscode.ProgressLocation.Notification,
+      cancellable: false
+    },
+    async (progress) => {
+      try {
+        const api = FirestoreAPI.for(account, project);
+        const database: any = {};
+
+        progress.report({ message: 'Listing root collections...' });
+        const rootCollections = await api.listCollections('');
+
+        if (!rootCollections.collectionIds || rootCollections.collectionIds.length === 0) {
+          vscode.window.showInformationMessage('Database is empty. No data to export.');
+          return;
+        }
+
+        let totalDocs = 0;
+
+        // Export root collections with higher concurrency (10 at a time) for faster export
+        const results = await limitConcurrency(
+          rootCollections.collectionIds,
+          10,
+          async (collectionId: string) => {
+            progress.report({ message: `Exporting collection: ${collectionId}...` });
+            const collectionData = await retryWithBackoff(() => 
+              exportCollection(api, collectionId, progress)
+            );
+            return { collectionId, collectionData };
+          }
+        );
+        
+        // Build database object and count documents
+        for (const { collectionId, collectionData } of results) {
+          database[collectionId] = collectionData;
+          const count = Object.keys(collectionData).length;
+          totalDocs += count;
+        }
+
+        // Write to file
+        const jsonContent = JSON.stringify(database);
+        await vscode.workspace.fs.writeFile(saveUri, Buffer.from(jsonContent, 'utf8'));
+
+        vscode.window.showInformationMessage(
+          `Database exported successfully! ${totalDocs} document(s) exported to ${saveUri.fsPath}`
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(`Failed to export database: ${error}`);
+      }
+    }
+  );
+}
+
+async function exportCollection(
+  api: FirestoreAPI,
+  collectionPath: string,
+  progress?: vscode.Progress<{ message?: string; increment?: number }>
+): Promise<any> {
+  const collection: any = {};
+  let pageToken: string | undefined;
+  let hasMore = true;
+  let totalProcessed = 0;
+
+  while (hasMore) {
+    // Use listDocumentsWithFields with max pageSize for fewer API calls
+    const result: any = await retryWithBackoff(() => 
+      (api as any).listDocumentsWithFields(collectionPath, 1000, pageToken)
+    );
+
+    if (result.documents && result.documents.length > 0) {
+      totalProcessed += result.documents.length;
+      if (progress) {
+        progress.report({ message: `Collection ${collectionPath}: ${totalProcessed} documents exported...` });
+      }
+
+      // Process all documents in parallel for maximum speed
+      await Promise.all(result.documents.map(async (doc: any) => {
+        const docId = doc.name.split('/').pop()!;
+        const docPath = doc.name.split('/documents/')[1];
+        
+        // Convert fields to JSON
+        const docData: any = {
+          _fields: {}
+        };
+
+        if (doc.fields) {
+          for (const [key, value] of Object.entries(doc.fields)) {
+            docData._fields[key] = getFieldValue(value as DocumentFieldValue);
+          }
+        }
+
+        // Check for subcollections
+        const subcollections = await retryWithBackoff(() => api.listCollections(docPath));
+        if (subcollections.collectionIds && subcollections.collectionIds.length > 0) {
+          docData._subcollections = {};
+          
+          // Export subcollections with higher concurrency (10 at a time)
+          const subResults = await limitConcurrency(
+            subcollections.collectionIds,
+            10,
+            async (subCollectionId: string) => {
+              const subCollectionPath = `${docPath}/${subCollectionId}`;
+              const subData = await retryWithBackoff(() => 
+                exportCollection(api, subCollectionPath, progress)
+              );
+              return { subCollectionId, subData };
+            }
+          );
+
+          for (const { subCollectionId, subData } of subResults) {
+            docData._subcollections[subCollectionId] = subData;
+          }
+        }
+
+        collection[docId] = docData;
+      }));
+    }
+
+    pageToken = result.nextPageToken;
+    hasMore = !!pageToken;
+  }
+
+  return collection;
+}
+
+async function importDatabase(): Promise<void> {
+  const context = getContext();
+  const account = context.globalState.get<accountInfo>('selectedAccount');
+  const project = context.globalState.get<FirebaseProject | null>('selectedProject');
+
+  if (!account || !project) {
+    vscode.window.showErrorMessage('Please select a Firebase account and project first.');
+    return;
+  }
+
+  // Ask user to select JSON file
+  const fileUris = await vscode.window.showOpenDialog({
+    canSelectMany: false,
+    filters: {
+      'JSON Files': ['json'],
+      'All Files': ['*']
+    },
+    openLabel: 'Import Database'
+  });
+
+  if (!fileUris || fileUris.length === 0) {
+    return;
+  }
+
+  const fileUri = fileUris[0];
+
+  // Confirm import
+  const confirmation = await vscode.window.showWarningMessage(
+    `Import database from ${fileUri.fsPath}?\n\n` +
+      'This will create new documents. Existing documents with the same IDs will be overwritten.',
+    { modal: true },
+    'Import'
+  );
+
+  if (confirmation !== 'Import') {
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      title: 'Importing Firestore database...',
+      location: vscode.ProgressLocation.Notification,
+      cancellable: false
+    },
+    async (progress) => {
+      try {
+        // Read file
+        const fileContent = await vscode.workspace.fs.readFile(fileUri);
+        const jsonContent = Buffer.from(fileContent).toString('utf8');
+        const database = JSON.parse(jsonContent);
+
+        const api = FirestoreAPI.for(account, project);
+        let totalDocs = 0;
+
+        // Import each collection
+        for (const [collectionId, collectionData] of Object.entries(database)) {
+          progress.report({ message: `Importing collection: ${collectionId}...` });
+          const count = await importCollection(api, collectionId, collectionData as any, progress);
+          totalDocs += count;
+        }
+
+        // Refresh the Firestore view
+        const firestoreProvider = providerStore.get<FirestoreProvider>('firestore');
+        firestoreProvider.refresh();
+
+        vscode.window.showInformationMessage(
+          `Database imported successfully! ${totalDocs} document(s) imported.`
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(`Failed to import database: ${error}`);
+      }
+    }
+  );
+}
+
+async function importCollection(
+  api: FirestoreAPI,
+  collectionPath: string,
+  collectionData: any,
+  progress?: vscode.Progress<{ message?: string; increment?: number }>
+): Promise<number> {
+  let count = 0;
+  const entries = Object.entries(collectionData);
+  const totalDocs = entries.length;
+  const BATCH_SIZE = 500; // Firestore batch write limit
+  const CONCURRENT_BATCHES = 5; // Process 5 batches in parallel
+
+  // Helper function to detect if data is in raw Firestore format (stringValue, mapValue, etc.)
+  const isFirestoreRawFormat = (obj: any): boolean => {
+    if (!obj || typeof obj !== 'object') return false;
+    const keys = Object.keys(obj);
+    const firestoreKeys = ['stringValue', 'integerValue', 'doubleValue', 'booleanValue', 'timestampValue', 'mapValue', 'arrayValue', 'nullValue', 'bytesValue', 'referenceValue', 'geoPointValue'];
+    return keys.some(key => firestoreKeys.includes(key));
+  };
+
+  // Helper function to detect if data contains Firestore format anywhere in the tree (deep check)
+  const containsFirestoreRawFormat = (data: any): boolean => {
+    if (!data || typeof data !== 'object') return false;
+    
+    // Check if this object itself is in Firestore format
+    if (isFirestoreRawFormat(data)) return true;
+    
+    // Check arrays
+    if (Array.isArray(data)) {
+      return data.some(item => containsFirestoreRawFormat(item));
+    }
+    
+    // Check object properties recursively
+    return Object.values(data).some(value => containsFirestoreRawFormat(value));
+  };
+
+  // Helper function to convert raw Firestore format to simple JSON
+  const convertFirestoreRawToJson = (data: any): any => {
+    if (!data || typeof data !== 'object') return data;
+    
+    // Check if this is a Firestore field value object
+    if (isFirestoreRawFormat(data)) {
+      return getFieldValue(data as DocumentFieldValue);
+    }
+    
+    // Recursively process objects and arrays
+    if (Array.isArray(data)) {
+      return data.map(convertFirestoreRawToJson);
+    }
+    
+    const result: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      result[key] = convertFirestoreRawToJson(value);
+    }
+    return result;
+  };
+
+  // Helper function to process a single batch
+  const processBatch = async (batch: [string, unknown][]) => {
+    const writes: any[] = [];
+
+    // Prepare batch writes for documents (without subcollections)
+    for (const [docId, docData] of batch) {
+      const data = docData as any;
+      
+      if (data._fields) {
+        // Always convert from raw Firestore format to simple JSON if it contains any Firestore keys
+        let fieldsToConvert = data._fields;
+        
+        // Deep check if any field (at any level) is in raw Firestore format
+        if (containsFirestoreRawFormat(fieldsToConvert)) {
+          // Convert from raw Firestore format to simple JSON first
+          fieldsToConvert = convertFirestoreRawToJson(fieldsToConvert);
+          console.log(`[Import] Converted raw Firestore format for document ${docId}`);
+        }
+        
+        const fields = convertToFirestoreFields(fieldsToConvert);
+        const documentPath = `projects/${(api as any).projectId}/databases/(default)/documents/${collectionPath}/${docId}`;
+        
+        writes.push({
+          update: {
+            name: documentPath,
+            fields: fields
+          }
+        });
+      }
+    }
+
+    // Execute batch write
+    let batchCount = 0;
+    if (writes.length > 0) {
+      try {
+        await (api as any).batchWrite(writes);
+        batchCount = writes.length;
+      } catch (error) {
+        console.error(`Batch write failed for collection ${collectionPath}:`, error);
+        // Fallback to individual writes for this batch
+        for (const [docId, docData] of batch) {
+          const data = docData as any;
+          if (data._fields) {
+            try {
+              // Apply same conversion as batch write
+              let fieldsToConvert = data._fields;
+              if (containsFirestoreRawFormat(fieldsToConvert)) {
+                fieldsToConvert = convertFirestoreRawToJson(fieldsToConvert);
+              }
+              const fields = convertToFirestoreFields(fieldsToConvert);
+              await api.createDocument(collectionPath, docId, fields);
+              batchCount++;
+            } catch (err) {
+              console.error(`Failed to import document ${docId}:`, err);
+            }
+          }
+        }
+      }
+    }
+
+    // Import subcollections (must be done after parent documents exist)
+    for (const [docId, docData] of batch) {
+      const data = docData as any;
+      if (data._subcollections) {
+        for (const [subCollectionId, subCollectionData] of Object.entries(data._subcollections)) {
+          const subCollectionPath = `${collectionPath}/${docId}/${subCollectionId}`;
+          const subCount = await importCollection(api, subCollectionPath, subCollectionData as any, progress);
+          batchCount += subCount;
+        }
+      }
+    }
+
+    return batchCount;
+  };
+
+  // Process documents in batches with controlled concurrency
+  for (let i = 0; i < entries.length; i += BATCH_SIZE * CONCURRENT_BATCHES) {
+    // Process multiple batches in parallel (up to CONCURRENT_BATCHES at a time)
+    const batchPromises: Promise<number>[] = [];
+    
+    for (let j = 0; j < CONCURRENT_BATCHES && (i + j * BATCH_SIZE) < entries.length; j++) {
+      const batchStart = i + j * BATCH_SIZE;
+      const batch = entries.slice(batchStart, batchStart + BATCH_SIZE);
+      batchPromises.push(processBatch(batch));
+    }
+
+    const batchCounts = await Promise.all(batchPromises);
+    count += batchCounts.reduce((sum, c) => sum + c, 0);
+    
+    if (progress) {
+      progress.report({ message: `Collection ${collectionPath}: ${count}/${totalDocs} documents imported...` });
+    }
+  }
+
+  return count;
 }
 
 async function addDocument(element: CollectionItem): Promise<void> {

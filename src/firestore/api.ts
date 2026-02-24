@@ -73,6 +73,34 @@ export class FirestoreAPI {
     };
   }
 
+  async listDocumentsWithFields(
+    path: string,
+    pageSize = 1000,
+    pageToken?: string
+  ): Promise<DocumentsList> {
+    const token = await this.projectManager.getAccessToken();
+    const reqOptions: request.OptionsWithUrl = {
+      method: 'GET',
+      url: this.getURLForPath(path),
+      json: true,
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      qs: {
+        pageSize,
+        pageToken,
+        showMissing: true
+      }
+    };
+
+    const result: InternalDocumentsList = await request(reqOptions);
+    result.documents.forEach(processDates);
+    return {
+      ...result,
+      documents: result.documents.map(processDates)
+    };
+  }
+
   async getDocument(path: string): Promise<FirestoreDocument> {
     const token = await this.projectManager.getAccessToken();
     const reqOptions: request.OptionsWithUrl = {
@@ -140,6 +168,25 @@ export class FirestoreAPI {
 
     const doc: InternalFirestoreDocument = await request(reqOptions);
     return processDates(doc);
+  }
+
+  async batchWrite(writes: any[]): Promise<void> {
+    const token = await this.projectManager.getAccessToken();
+    const url = `${URL_BASE}/projects/${this.projectId}/databases/(default)/documents:batchWrite`;
+    
+    const reqOptions: request.OptionsWithUrl = {
+      method: 'POST',
+      url: url,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: {
+        writes
+      }
+    };
+
+    await request(reqOptions);
   }
 
   private getURLForPath(path: string): string {
@@ -219,12 +266,8 @@ export function getFieldArrayValue(
   }
 
   return values.map(val => {
-    const itemVal = processFieldValue(val);
-    if (itemVal.type === 'array') {
-      return getFieldArrayValue(itemVal.value);
-    } else {
-      return itemVal.value;
-    }
+    // Use getFieldValue to properly convert all types recursively (including maps)
+    return getFieldValue(val);
   });
 }
 
@@ -264,15 +307,16 @@ export function getFieldValue(field: DocumentFieldValue): any {
       return undefined;
     }
   } else if (processed.type === 'geopoint') {
-    // Return geopoint as a plain object with latitude and longitude
+    // Return geopoint with a marker to preserve type information
     console.log('[Geopoint Debug] processed.value:', JSON.stringify(processed.value));
     if (processed.value && typeof processed.value === 'object') {
       return {
+        _geopoint: true,
         latitude: processed.value.latitude || 0,
         longitude: processed.value.longitude || 0
       };
     }
-    return {};
+    return { _geopoint: true };
   } else if (processed.type === 'integer') {
     // For some reason integers are returned as strings, but doubles aren't
     return processed.value !== undefined ? Number(processed.value) : undefined;

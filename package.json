@@ -277,6 +277,24 @@
         "category": "Firestore"
       },
       {
+        "command": "firebaseExplorer.firestore.exportDatabase",
+        "title": "Export Database to JSON",
+        "category": "Firestore",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "firebaseExplorer.firestore.importDatabase",
+        "title": "Import Database from JSON",
+        "category": "Firestore",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "firebaseExplorer.firestore.clearDatabase",
+        "title": "Clear Entire Database",
+        "category": "Firestore",
+        "icon": "$(trash)"
+      },
+      {
         "command": "firebaseExplorer.firestore.deleteDocument",
         "title": "Delete Document",
         "category": "Firestore"
@@ -373,6 +391,21 @@
           "command": "firebaseExplorer.firestore.refresh",
           "when": "view == firebase-firestore && firebase:firestore:loaded",
           "group": "navigation@2"
+        },
+        {
+          "command": "firebaseExplorer.firestore.exportDatabase",
+          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "group": "navigation@3"
+        },
+        {
+          "command": "firebaseExplorer.firestore.importDatabase",
+          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "group": "navigation@4"
+        },
+        {
+          "command": "firebaseExplorer.firestore.clearDatabase",
+          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "group": "navigation@5"
         }
       ],
       "view/item/context": [

@@ -231,7 +231,18 @@ function convertValueToFirestoreField(value: any): any {
   }
 
   if (typeof value === 'object') {
-    // Check for geopoint pattern (object with latitude AND longitude)
+    // Check for geopoint marker from export
+    if (value._geopoint === true && value.latitude !== undefined && value.longitude !== undefined) {
+      return {
+        geoPointValue: {
+          latitude: value.latitude,
+          longitude: value.longitude
+        }
+      };
+    }
+
+    // Check for geopoint pattern (object with latitude AND longitude and exactly 2 keys)
+    // This is for backward compatibility if someone has old exports
     if (
       value.latitude !== undefined && 
       value.longitude !== undefined &&
@@ -247,7 +258,7 @@ function convertValueToFirestoreField(value: any): any {
       };
     }
 
-    // Check for special Firestore types with _type marker
+    // Check for special Firestore types with _type marker (legacy)
     if (value._type === 'geopoint' && value.latitude !== undefined && value.longitude !== undefined) {
       return {
         geoPointValue: {
@@ -262,9 +273,17 @@ function convertValueToFirestoreField(value: any): any {
     }
 
     // Regular object - convert to map
+    // Filter out internal markers like _geopoint before converting to map
+    const filteredValue: any = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (!k.startsWith('_geopoint') && !k.startsWith('_type')) {
+        filteredValue[k] = v;
+      }
+    }
+    
     return {
       mapValue: {
-        fields: convertToFirestoreFields(value)
+        fields: convertToFirestoreFields(filteredValue)
       }
     };
   }
