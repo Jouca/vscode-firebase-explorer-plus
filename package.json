@@ -46,7 +46,7 @@
     "build": "webpack --mode=development --env.development",
     "compile": "tsc -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "vscode:prepublish": "webpack --env.development",
+    "vscode:prepublish": "webpack --mode=production --env.production",
     "package": "vsce package"
   },
   "activationEvents": [

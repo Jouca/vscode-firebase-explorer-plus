@@ -60,23 +60,6 @@ function getWebviewConfig(env) {
     }
   ];
 
-  if (env.production) {
-    moduleRules.push({
-      test: /\.ts$/,
-      enforce: 'pre',
-      use: [
-        {
-          loader: 'tslint-loader',
-          options: {
-            typeCheck: true,
-            tsConfigFile: 'src/webviews/tsconfig.json'
-          }
-        }
-      ],
-      exclude: /node_modules/
-    });
-  }
-
   return {
     name: 'webviews',
     context: path.resolve(__dirname, 'src/webviews'),
@@ -144,21 +127,6 @@ function getExtensionConfig(env) {
       exclude: /node_modules|\.d\.ts$/
     }
   ];
-
-  if (env.production) {
-    moduleRules.push({
-      test: /\.ts$/,
-      enforce: 'pre',
-      use: {
-        loader: 'tslint-loader',
-        options: {
-          tsConfigFile: 'tsconfig.json',
-          typeCheck: true
-        }
-      },
-      exclude: /node_modules/
-    });
-  }
 
   return {
     name: 'extension',
