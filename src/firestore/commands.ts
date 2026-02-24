@@ -16,140 +16,140 @@ import { FirebaseProject } from '../projects/ProjectManager';
 export function registerFirestoreCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.refresh',
+      'firebaseExplorerPlus.firestore.refresh',
       providerRefresh
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.refreshCollection',
+      'firebaseExplorerPlus.firestore.refreshCollection',
       providerRefresh
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copyItemName',
+      'firebaseExplorerPlus.firestore.copyItemName',
       copyItemName
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copyItemPath',
+      'firebaseExplorerPlus.firestore.copyItemPath',
       copyItemPath
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copySnippet.JS.ref',
+      'firebaseExplorerPlus.firestore.copySnippet.JS.ref',
       copySnippetJS_ref
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copySnippet.JS.doc.onSnapshot',
+      'firebaseExplorerPlus.firestore.copySnippet.JS.doc.onSnapshot',
       copySnippetJS_doc_onSnapshot
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copySnippet.JS.collection.onSnapshot',
+      'firebaseExplorerPlus.firestore.copySnippet.JS.collection.onSnapshot',
       copySnippetJS_collection_onSnapshot
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.deleteDocument',
+      'firebaseExplorerPlus.firestore.deleteDocument',
       deleteDocument
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.addDocument',
+      'firebaseExplorerPlus.firestore.addDocument',
       addDocument
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.addCollection',
+      'firebaseExplorerPlus.firestore.addCollection',
       addCollection
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.deleteCollection',
+      'firebaseExplorerPlus.firestore.deleteCollection',
       deleteCollection
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.exportDatabase',
+      'firebaseExplorerPlus.firestore.exportDatabase',
       exportDatabase
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.importDatabase',
+      'firebaseExplorerPlus.firestore.importDatabase',
       importDatabase
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.refreshDocument',
+      'firebaseExplorerPlus.firestore.refreshDocument',
       providerRefresh
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.refreshDocumentField',
+      'firebaseExplorerPlus.firestore.refreshDocumentField',
       providerRefresh
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copyDocumentContent',
+      'firebaseExplorerPlus.firestore.copyDocumentContent',
       copyDocumentContent
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.viewDocumentContent',
+      'firebaseExplorerPlus.firestore.viewDocumentContent',
       viewDocumentContent
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copyDocumentFieldName',
+      'firebaseExplorerPlus.firestore.copyDocumentFieldName',
       copyDocumentFieldName
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.copyDocumentFieldValue',
+      'firebaseExplorerPlus.firestore.copyDocumentFieldValue',
       copyDocumentFieldValue
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.firestore.clearDatabase',
+      'firebaseExplorerPlus.firestore.clearDatabase',
       clearDatabase
     )
   );
@@ -637,7 +637,7 @@ async function addCollection(): Promise<void> {
         vscode.window.showInformationMessage(`Collection "${collectionName}" created with document "${finalDocId}".`);
         
         // Check if auto-open is enabled
-        const config = vscode.workspace.getConfiguration('firebaseExplorer.firestore');
+        const config = vscode.workspace.getConfiguration('firebaseExplorerPlus.firestore');
         const autoOpen = config.get<boolean>('autoOpenDocument', true);
         
         if (autoOpen) {
@@ -1561,7 +1561,7 @@ async function addDocument(element: CollectionItem): Promise<void> {
         vscode.window.showInformationMessage(`Document "${finalDocId}" created successfully.`);
         
         // Check if auto-open is enabled
-        const config = vscode.workspace.getConfiguration('firebaseExplorer.firestore');
+        const config = vscode.workspace.getConfiguration('firebaseExplorerPlus.firestore');
         const autoOpen = config.get<boolean>('autoOpenDocument', true);
         
         if (autoOpen) {

@@ -12,7 +12,7 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "env": {
-        "VSCODE_DEBUGGING_EXTENSION": "firebase-explorer"
+        "VSCODE_DEBUGGING_EXTENSION": "firebase-explorer-plus"
       },
       "outFiles": ["${workspaceFolder}/dist/extension.js"]
     },

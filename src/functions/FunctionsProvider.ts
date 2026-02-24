@@ -237,7 +237,7 @@ export class CloudFunctionSourceItem extends vscode.TreeItem {
     super(tree.name);
 
     this.resourceUri = vscode.Uri.parse(
-      'firebase-explorer-readonly:' + tree.path
+      'firebase-explorer-plus-readonly:' + tree.path
     );
 
     if (tree.type === 'directory') {

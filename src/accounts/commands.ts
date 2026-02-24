@@ -7,26 +7,26 @@ import { providerStore } from '../stores';
 
 export function registerAccountsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('firebaseExplorer.accounts.add', addAccount)
+    vscode.commands.registerCommand('firebaseExplorerPlus.accounts.add', addAccount)
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.accounts.remove',
+      'firebaseExplorerPlus.accounts.remove',
       removeAccount
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.accounts.clearAll',
+      'firebaseExplorerPlus.accounts.clearAll',
       clearAllAccounts
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.openSettings',
+      'firebaseExplorerPlus.openSettings',
       openSettings
     )
   );
@@ -83,10 +83,10 @@ function removeAccount(element: AccountItem): void {
   if (selectedAccount === element.accountInfo) {
     context.globalState.update('selectedAccount', undefined);
     context.globalState.update('selectedProject', undefined);
-    vscode.commands.executeCommand('firebaseExplorer.functions.refresh');
-    vscode.commands.executeCommand('firebaseExplorer.apps.refresh');
-    vscode.commands.executeCommand('firebaseExplorer.firestore.refresh');
-    vscode.commands.executeCommand('firebaseExplorer.database.refresh');
+    vscode.commands.executeCommand('firebaseExplorerPlus.functions.refresh');
+    vscode.commands.executeCommand('firebaseExplorerPlus.apps.refresh');
+    vscode.commands.executeCommand('firebaseExplorerPlus.firestore.refresh');
+    vscode.commands.executeCommand('firebaseExplorerPlus.database.refresh');
   }
 
   AccountManager.removeAccount(element.accountInfo);
@@ -121,6 +121,6 @@ async function clearAllAccounts(): Promise<void> {
 async function openSettings(): Promise<void> {
   await vscode.commands.executeCommand(
     'workbench.action.openSettings',
-    '@ext:vymarkov.firebase-explorer'
+    '@ext:jouca.firebase-explorer-plus'
   );
 }

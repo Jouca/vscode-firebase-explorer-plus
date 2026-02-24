@@ -284,7 +284,7 @@ export class HostingFileItem extends vscode.TreeItem {
   collapsibleState = vscode.TreeItemCollapsibleState.None;
   tooltip = undefined;
   // command = {
-  //   command: 'firebaseExplorer.hosting.openFile',
+  //   command: 'firebaseExplorerPlus.hosting.openFile',
   //   title: 'Open this file',
   //   arguments: [this]
   // };

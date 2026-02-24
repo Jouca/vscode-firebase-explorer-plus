@@ -7,49 +7,49 @@ import { providerStore } from '../stores';
 export function registerDatabaseCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.refresh',
+      'firebaseExplorerPlus.database.refresh',
       refreshDatabase
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.editEntryValue',
+      'firebaseExplorerPlus.database.editEntryValue',
       editEntryValue
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.deleteEntry',
+      'firebaseExplorerPlus.database.deleteEntry',
       deleteEntry
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.copyName',
+      'firebaseExplorerPlus.database.copyName',
       copyName
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.copyPath',
+      'firebaseExplorerPlus.database.copyPath',
       copyPath
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.copySnippet.JS.ref',
+      'firebaseExplorerPlus.database.copySnippet.JS.ref',
       copySnippetJS_ref
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.database.copySnippet.JS.onValue',
+      'firebaseExplorerPlus.database.copySnippet.JS.onValue',
       copySnippetJS_OnValue
     )
   );

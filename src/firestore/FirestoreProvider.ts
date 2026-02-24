@@ -256,7 +256,7 @@ export class DocumentItem extends vscode.TreeItem {
     
     // Add inline edit button
     this.command = {
-      command: 'firebaseExplorer.firestore.viewDocumentContent',
+      command: 'firebaseExplorerPlus.firestore.viewDocumentContent',
       title: 'Edit Document as JSON',
       arguments: [this]
     };

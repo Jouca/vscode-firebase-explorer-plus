@@ -1,16 +1,16 @@
-# Firebase Explorer
+# Firebase Explorer Plus
 A Visual Studio Code extension to explore and manage your Firebase projects.
 
-![Firebase Explorer logo](assets/icon.png)
+![Firebase Explorer Plus logo](assets/icon.png)
 
-## Instalation
+## Installation
 Launch VS Code Quick Open (`Ctrl+P`), paste the following command, and press enter:
 ```
-ext install jsayol.firebase-explorer
+ext install jouca.firebase-explorer-plus
 ```
 
-Or you can just search for "Firebase Explorer" in the Extensions view.
+Or you can just search for "Firebase Explorer Plus" in the Extensions view.
 
 ## Preview
 
-![Firebase Explorer screenshot](images/screenshot.png)
+![Firebase Explorer Plus screenshot](images/screenshot.png)

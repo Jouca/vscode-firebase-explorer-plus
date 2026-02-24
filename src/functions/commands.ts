@@ -26,49 +26,49 @@ const logViews: {
 export function registerFunctionsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.refresh',
+      'firebaseExplorerPlus.functions.refresh',
       refreshFunctions
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.triggerHTTPS',
+      'firebaseExplorerPlus.functions.triggerHTTPS',
       triggerHTTPSFunction
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.copyTrigger',
+      'firebaseExplorerPlus.functions.copyTrigger',
       copyTrigger
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.openInConsole.cloud',
+      'firebaseExplorerPlus.functions.openInConsole.cloud',
       openInCloudConsole
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.openInConsole.firebase',
+      'firebaseExplorerPlus.functions.openInConsole.firebase',
       openInFirebaseConsole
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.viewLogs',
+      'firebaseExplorerPlus.functions.viewLogs',
       viewLogs
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.functions.viewSource',
+      'firebaseExplorerPlus.functions.viewSource',
       viewSource
     )
   );

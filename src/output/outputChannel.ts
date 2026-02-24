@@ -32,7 +32,7 @@ export interface OutputChannel {
  * @function show
  */
 export class FirebaseExplorerOutputChannel implements OutputChannel {
-  private readonly channel: vscode.OutputChannel = vscode.window.createOutputChannel('Firebase Explorer');
+  private readonly channel: vscode.OutputChannel = vscode.window.createOutputChannel('Firebase Explorer Plus');
 
   /**
    * Display the output channel.

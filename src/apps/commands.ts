@@ -19,49 +19,49 @@ import { AccountInfo } from '../accounts';
 export function registerAppsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.refresh',
+      'firebaseExplorerPlus.apps.refresh',
       refreshApps
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.editAppName',
+      'firebaseExplorerPlus.apps.editAppName',
       editAppName
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.showAppConfig',
+      'firebaseExplorerPlus.apps.showAppConfig',
       showAppConfig
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.addAppCertificate',
+      'firebaseExplorerPlus.apps.addAppCertificate',
       addAppCertificate
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.copyAppCertificate',
+      'firebaseExplorerPlus.apps.copyAppCertificate',
       copyAppCertificate
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.deleteAppCertificate',
+      'firebaseExplorerPlus.apps.deleteAppCertificate',
       deleteAppCertificate
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.apps.create',
+      'firebaseExplorerPlus.apps.create',
       createNewApp
     )
   );
@@ -150,7 +150,7 @@ function showAppConfig(element: AppsProviderItem): void {
       });
 
       const textDocument = await vscode.workspace.openTextDocument(
-        vscode.Uri.parse('firebase-explorer-readonly:' + tmpFile.path)
+        vscode.Uri.parse('firebase-explorer-plus-readonly:' + tmpFile.path)
       );
 
       return vscode.window.showTextDocument(textDocument);

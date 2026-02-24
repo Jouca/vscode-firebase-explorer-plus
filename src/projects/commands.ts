@@ -13,14 +13,14 @@ import { HostingProvider } from '../hosting/HostingProvider';
 export function registerProjectsCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.projects.refresh',
+      'firebaseExplorerPlus.projects.refresh',
       refreshProjects
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.projects.selection',
+      'firebaseExplorerPlus.projects.selection',
       projectSelection
     )
   );

@@ -4,7 +4,7 @@ import { HostingFileItem } from './HostingProvider';
 export function registerHostingCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'firebaseExplorer.hosting.openFile',
+      'firebaseExplorerPlus.hosting.openFile',
       openFile
     )
   );

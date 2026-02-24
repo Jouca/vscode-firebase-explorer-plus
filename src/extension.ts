@@ -61,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // This adds a custom schema to open files as read-only
   vscode.workspace.registerTextDocumentContentProvider(
-    'firebase-explorer-readonly',
+    'firebase-explorer-plus-readonly',
     {
       async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         try {
@@ -223,11 +223,11 @@ function showSignInPrompt(msg?: string): void {
   const buttonText = 'Sign In';
   const message =
     msg ||
-    'Hello! Please sign in with your Google account to start using Firebase Explorer.';
+    'Hello! Please sign in with your Google account to start using Firebase Explorer Plus.';
 
   vscode.window.showInformationMessage(message, buttonText).then(action => {
     if (action === buttonText) {
-      vscode.commands.executeCommand('firebaseExplorer.accounts.add');
+      vscode.commands.executeCommand('firebaseExplorerPlus.accounts.add');
     }
   });
 }
