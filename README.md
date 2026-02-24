@@ -6,7 +6,9 @@ A VS Code extension to explore and manage Firebase projects with enhanced featur
 
 ## About
 
-This extension is a fork of [vscode-firebase-explorer](https://github.com/lazy-orange/vscode-firebase-explorer) with significant enhancements and new features for better Firebase management.
+This extension is a [fork](https://github.com/lazy-orange/vscode-firebase-explorer) of a [fork](https://github.com/jsayol/vscode-firebase-explorer) with significant enhancements, stability and new features for better Firebase management.
+
+All credits to [@lazy-orange](https://github.com/lazy-orange) and [@jsayol](https://github.com/jsayol) (original creator) for their work!
 
 ## Installation
 
@@ -54,3 +56,7 @@ Or search for "Firebase Explorer Plus" in the Extensions view.
 
 ![Firebase Explorer Plus screenshot](images/screenshot.png)
 ![Firebase Explorer Plus screenshot2](images/screenshot2.png)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
