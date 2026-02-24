@@ -50,7 +50,12 @@
     "package": "vsce package"
   },
   "activationEvents": [
-    "*"
+    "onView:firebase-projects",
+    "onView:firebase-firestore",
+    "onView:firebase-database",
+    "onView:firebase-functions",
+    "onView:firebase-hosting",
+    "onView:firebase-apps"
   ],
   "contributes": {
     "viewsContainers": {
