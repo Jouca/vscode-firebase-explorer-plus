@@ -102,6 +102,46 @@ export class FirestoreAPI {
     await request(reqOptions);
   }
 
+  async updateDocument(path: string, fields: any): Promise<FirestoreDocument> {
+    const token = await this.projectManager.getAccessToken();
+    const reqOptions: request.OptionsWithUrl = {
+      method: 'PATCH',
+      url: this.getURLForPath(path),
+      json: true,
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: {
+        fields
+      }
+    };
+
+    const doc: InternalFirestoreDocument = await request(reqOptions);
+    return processDates(doc);
+  }
+
+  async createDocument(collectionPath: string, documentId: string, fields: any): Promise<FirestoreDocument> {
+    const token = await this.projectManager.getAccessToken();
+    const url = `${URL_BASE}/projects/${
+      this.projectId
+    }/databases/(default)/documents/${collectionPath.replace(/^\//, '')}?documentId=${encodeURIComponent(documentId)}`;
+    
+    const reqOptions: request.OptionsWithUrl = {
+      method: 'POST',
+      url: url,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: {
+        fields
+      }
+    };
+
+    const doc: InternalFirestoreDocument = await request(reqOptions);
+    return processDates(doc);
+  }
+
   private getURLForPath(path: string): string {
     return `${URL_BASE}/projects/${
       this.projectId
@@ -156,6 +196,7 @@ export function processFieldValue(
   }
 
   if (contains(field, 'geoPointValue')) {
+    console.log('[Geopoint Debug] Raw field.geoPointValue:', JSON.stringify(field.geoPointValue));
     return { type: 'geopoint', value: field.geoPointValue };
   }
 
@@ -222,6 +263,16 @@ export function getFieldValue(field: DocumentFieldValue): any {
     } else {
       return undefined;
     }
+  } else if (processed.type === 'geopoint') {
+    // Return geopoint as a plain object with latitude and longitude
+    console.log('[Geopoint Debug] processed.value:', JSON.stringify(processed.value));
+    if (processed.value && typeof processed.value === 'object') {
+      return {
+        latitude: processed.value.latitude || 0,
+        longitude: processed.value.longitude || 0
+      };
+    }
+    return {};
   } else if (processed.type === 'integer') {
     // For some reason integers are returned as strings, but doubles aren't
     return processed.value !== undefined ? Number(processed.value) : undefined;

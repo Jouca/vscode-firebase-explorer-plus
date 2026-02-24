@@ -22,6 +22,13 @@ export function registerAccountsCommands(context: vscode.ExtensionContext) {
       clearAllAccounts
     )
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'firebaseExplorer.openSettings',
+      openSettings
+    )
+  );
 }
 
 async function addAccount(): Promise<void> {
@@ -103,4 +110,11 @@ async function clearAllAccounts(): Promise<void> {
     
     vscode.window.showInformationMessage('All Firebase accounts have been removed.');
   }
+}
+
+async function openSettings(): Promise<void> {
+  await vscode.commands.executeCommand(
+    'workbench.action.openSettings',
+    '@ext:vymarkov.firebase-explorer'
+  );
 }

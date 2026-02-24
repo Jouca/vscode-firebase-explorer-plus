@@ -253,6 +253,13 @@ export class DocumentItem extends vscode.TreeItem {
     super('', vscode.TreeItemCollapsibleState.Collapsed);
     this.fullName = document.name;
     this.name = this.fullName.split('/').slice(-1)[0];
+    
+    // Add inline edit button
+    this.command = {
+      command: 'firebaseExplorer.firestore.viewDocumentContent',
+      title: 'Edit Document as JSON',
+      arguments: [this]
+    };
   }
 
   markAsRemoved() {

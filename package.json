@@ -146,6 +146,12 @@
         "category": "Firebase"
       },
       {
+        "command": "firebaseExplorer.openSettings",
+        "title": "Open Extension Settings",
+        "category": "Firebase",
+        "icon": "$(gear)"
+      },
+      {
         "command": "firebaseExplorer.projects.refresh",
         "title": "Refresh Projects",
         "category": "Firebase",
@@ -217,6 +223,15 @@
         }
       },
       {
+        "command": "firebaseExplorer.firestore.addCollection",
+        "title": "Add Collection",
+        "category": "Firestore",
+        "icon": {
+          "light": "assets/light/add.svg",
+          "dark": "assets/dark/add.svg"
+        }
+      },
+      {
         "command": "firebaseExplorer.firestore.refreshCollection",
         "title": "Refresh Collection",
         "category": "Firestore"
@@ -252,6 +267,16 @@
         "category": "Firestore"
       },
       {
+        "command": "firebaseExplorer.firestore.addDocument",
+        "title": "Add Document",
+        "category": "Firestore"
+      },
+      {
+        "command": "firebaseExplorer.firestore.deleteCollection",
+        "title": "Delete Collection",
+        "category": "Firestore"
+      },
+      {
         "command": "firebaseExplorer.firestore.deleteDocument",
         "title": "Delete Document",
         "category": "Firestore"
@@ -259,6 +284,11 @@
       {
         "command": "firebaseExplorer.firestore.copyDocumentContent",
         "title": "Copy Content",
+        "category": "Firestore"
+      },
+      {
+        "command": "firebaseExplorer.firestore.viewDocumentContent",
+        "title": "View as JSON",
         "category": "Firestore"
       },
       {
@@ -320,6 +350,11 @@
           "group": "navigation@2"
         },
         {
+          "command": "firebaseExplorer.openSettings",
+          "when": "view =~ /^firebase-/",
+          "group": "navigation@99"
+        },
+        {
           "command": "firebaseExplorer.apps.create",
           "when": "view == firebase-apps && firebase:apps:loaded",
           "group": "navigation@1"
@@ -330,9 +365,14 @@
           "group": "navigation@2"
         },
         {
-          "command": "firebaseExplorer.firestore.refresh",
+          "command": "firebaseExplorer.firestore.addCollection",
           "when": "view == firebase-firestore && firebase:firestore:loaded",
           "group": "navigation@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.refresh",
+          "when": "view == firebase-firestore && firebase:firestore:loaded",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -427,9 +467,19 @@
           "group": "firestore.collection-snippet@2"
         },
         {
+          "command": "firebaseExplorer.firestore.addDocument",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection-edit@1"
+        },
+        {
+          "command": "firebaseExplorer.firestore.deleteCollection",
+          "when": "viewItem == firestore.collection",
+          "group": "firestore.collection-edit@2"
+        },
+        {
           "command": "firebaseExplorer.firestore.refreshCollection",
           "when": "viewItem == firestore.collection",
-          "group": "firestore.collection-other@1"
+          "group": "firestore.collection-other@3"
         },
         {
           "command": "firebaseExplorer.firestore.copyItemName",
@@ -445,6 +495,11 @@
           "command": "firebaseExplorer.firestore.copyDocumentContent",
           "when": "viewItem == firestore.document",
           "group": "firestore.document-copy@3"
+        },
+        {
+          "command": "firebaseExplorer.firestore.viewDocumentContent",
+          "when": "viewItem == firestore.document",
+          "group": "firestore.document-view@1"
         },
         {
           "command": "firebaseExplorer.firestore.deleteDocument",
@@ -517,6 +572,16 @@
           "group": "apps.fingerprint@2"
         }
       ]
+    },
+    "configuration": {
+      "title": "Firebase Explorer",
+      "properties": {
+        "firebaseExplorer.firestore.autoOpenDocument": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically open documents in editor after creation"
+        }
+      }
     }
   },
   "devDependencies": {

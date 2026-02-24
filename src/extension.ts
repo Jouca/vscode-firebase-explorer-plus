@@ -15,6 +15,7 @@ import { registerDatabaseCommands } from './database/commands';
 import { DatabaseProvider } from './database/DatabaseProvider';
 import { registerFirestoreCommands } from './firestore/commands';
 import { FirestoreProvider } from './firestore/FirestoreProvider';
+import { getFirestoreFileSystemProvider } from './firestore/FirestoreFileSystem';
 import { registerFunctionsCommands } from './functions/commands';
 import { FunctionsProvider } from './functions/FunctionsProvider';
 import { registerHostingCommands } from './hosting/commands';
@@ -41,6 +42,14 @@ export async function activate(context: vscode.ExtensionContext) {
   registerProvider('projects', new ProjectsProvider(/*context*/));
   registerProvider('firestore', new FirestoreProvider(context));
   registerProvider('database', new DatabaseProvider(context));
+
+  // Register Firestore virtual file system
+  const firestoreFS = getFirestoreFileSystemProvider();
+  context.subscriptions.push(
+    vscode.workspace.registerFileSystemProvider('firestore', firestoreFS, {
+      isCaseSensitive: true
+    })
+  );
 
   registerHostingCommands(context);
   registerFunctionsCommands(context);
