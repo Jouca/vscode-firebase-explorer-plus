@@ -29,6 +29,16 @@ import { firebaseExplorerOutputChannel } from './output/outputChannel'
 export async function activate(context: vscode.ExtensionContext) {
   setContextObj(context);
 
+  // Register commands FIRST, before initialization
+  // This ensures commands are available when showSignInPrompt is called
+  registerHostingCommands(context);
+  registerFunctionsCommands(context);
+  registerAppsCommands(context);
+  registerAccountsCommands(context);
+  registerProjectsCommands(context);
+  registerFirestoreCommands(context);
+  registerDatabaseCommands(context);
+
   // Wait for initialization
   await initialize(context);
 
@@ -50,14 +60,6 @@ export async function activate(context: vscode.ExtensionContext) {
       isCaseSensitive: true
     })
   );
-
-  registerHostingCommands(context);
-  registerFunctionsCommands(context);
-  registerAppsCommands(context);
-  registerAccountsCommands(context);
-  registerProjectsCommands(context);
-  registerFirestoreCommands(context);
-  registerDatabaseCommands(context);
 
   // This adds a custom schema to open files as read-only
   vscode.workspace.registerTextDocumentContentProvider(

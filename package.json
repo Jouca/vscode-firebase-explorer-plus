@@ -3,7 +3,7 @@
   "preview": true,
   "displayName": "Firebase Explorer Plus",
   "description": "Visual Studio Code extension from the forked project Firebase Explorer to explore and manage your Firebase projects",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": {
     "name": "Jouca",
     "email": "joucagame@gmail.com"
@@ -50,11 +50,7 @@
     "package": "vsce package"
   },
   "activationEvents": [
-    "onView:firebase-projects",
-    "onView:firebase-functions",
-    "onView:firebase-apps",
-    "onView:firebase-firestore",
-    "onView:firebase-database"
+    "*"
   ],
   "contributes": {
     "viewsContainers": {

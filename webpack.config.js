@@ -157,9 +157,7 @@ function getExtensionConfig(env) {
     externals: {
       vscode: 'commonjs vscode',
       bufferutil: 'undefined',
-      'utf-8-validate': 'undefined',
-      'request': 'commonjs request',
-      'request-promise-native': 'commonjs request-promise-native'
+      'utf-8-validate': 'undefined'
     },
     module: {
       rules: moduleRules
